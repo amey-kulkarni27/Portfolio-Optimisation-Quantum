@@ -4,7 +4,7 @@ import pandas as pd
 from dwave.system import DWaveSampler, EmbeddingComposite
 
 N = 3 # Number of stocks
-f = 2 # Fixed number of stocks that can be chosen
+sig_p = 0.6 # Expected return from n stocks (not average currently)
 G = nx.Graph()
 G.add_edges_from([(i, j) for i in range(N) for j in range(i + 1, N)])
 
@@ -15,12 +15,18 @@ returns = pd.read_csv("mean_returns.csv")
 # The matrix where we add the objective and the constraint
 Q = defaultdict(int)
 
-# Constraint specifying only
-lagrange = 1 # Some temporary value
+# Constraint specifying we should be as close to the return as possible
+
+# Smaller Lagrange focusses more on optimisation, hence risk is lowered a lot, even if returns may be low
+lagrange = 1
+
+# Larger Lagrange focusses more on the constraint, hence we try to meet the expected returns, even if that may increase the risk
+lagrange = 10
+
 for i in range(N):
-    Q[(i, i)] += -(2 * f - 1) * lagrange
+    Q[(i, i)] += (returns.iloc[i] * (-2 * sig_p + returns.iloc[i])) * lagrange
     for j in range(i + 1, N):
-        Q[(i, j)] += 2 * lagrange
+        Q[(i, j)] += 2 * lagrange * returns.iloc[i] * returns.iloc[j]
 
 # Objective function
 for i in range(N):
@@ -35,11 +41,10 @@ sampleset = sampler.sample_qubo(Q, num_reads=10, chain_strength=1)
 # Print the entire sampleset, that is, the entire table
 print(sampleset)
 
-# Print the lowest energy sample, all info
-print(sampleset.first)
-
-#Print the sample composition (binary here)
-print((sampleset.first.sample))
-
-#Print the sample energy
-print((sampleset.first.energy))
+# For the lowest energy, find the actual return
+actual_return = 0.0
+distribution = sampleset.first.sample
+for s_num in distribution.keys():
+    if(distribution[s_num] == 1):
+        actual_return += returns.iloc[s_num]
+print(actual_return)
