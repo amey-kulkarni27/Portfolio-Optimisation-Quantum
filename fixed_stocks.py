@@ -32,4 +32,14 @@ for i, j in G.edges:
 sampler = EmbeddingComposite(DWaveSampler())
 sampleset = sampler.sample_qubo(Q, num_reads=10, chain_strength=1)
 
+# Print the entire sampleset, that is, all energies
 print(sampleset)
+
+# Print the lowest energy sample, all info
+print(sampleset.first)
+
+#Print the sample composition (binary here)
+print((sampleset.first.sample))
+
+#Print the sample energy
+print((sampleset.first.energy))
