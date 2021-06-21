@@ -1,0 +1,25 @@
+%        File: annealing.tex
+%     Created: Mon Jun 21 04:00 PM 2021 I
+% Last Change: Mon Jun 21 04:00 PM 2021 I
+%
+\documentclass[a4paper]{report}
+\begin{document}
+The optimisations described in this report have been implemented on a quantum computer using the resources provided by DWave Systems.
+
+\section{Problem Description}
+Given $N$ stocks, their covariance matrix and average returns over a time period (computable using classical computers too since it can be done beforehand, or offline),
+an (optional) expected average return amount, (optional) desired number of stocks, to come up with a portfolio that satisfies
+these conditions to different degrees and also minimises the investment risk.
+
+\section{Boolean Variables}
+Define a boolean variable $x_i$ for the $i^{th}$ stock. $x_i = 1$ means that we include this stock in our portfolio, 
+$x_i = 0$ means that we do not include this stock in our portfolio.
+
+\section{Objective Function}
+The objective function we want to minimise is the investment risk $R$ incurred. It is defined as follows-
+$$ R = \sum\limits_{i = 1}^{n}\sigma_{ii}x_i^2 + \sum\limits_{i = 1}^{n}\sum\limits_{j = i + 1}^{n}\sigma_{ij}x_ix_j$$
+where $\sigma_{ij}$ is the covariance between the $i^{th}$ and the $j^{th}$ stocks. ($\sigma_{ii}$ is the variance of
+the $i^{th}$ stock.)
+\end{document}
+
+
