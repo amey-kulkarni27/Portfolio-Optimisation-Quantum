@@ -15,7 +15,7 @@ returns = pd.read_csv("mean_returns.csv")
 # The matrix where we add the objective and the constraint
 Q = defaultdict(int)
 
-# Constraint specifying only
+# Constraint specifying only f stocks should be used
 lagrange = 1 # Some temporary value
 for i in range(N):
     Q[(i, i)] += -(2 * f - 1) * lagrange
