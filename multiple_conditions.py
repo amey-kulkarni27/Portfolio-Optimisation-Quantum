@@ -3,7 +3,7 @@ from collections import defaultdict
 import pandas as pd
 from dwave.system import DWaveSampler, EmbeddingComposite
 
-N = 3 # Number of stocks
+N = 4 # Number of stocks
 sig_p = 0.9 # Expected return from n stocks (not average currently)
 f = 3 # Fixed number of stocks that can be chosen
 G = nx.Graph()
@@ -41,7 +41,7 @@ for i in range(N):
 
 # Objective function
 for i in range(N):
-    Q[(i, i)] += cov.iloc[i, i]
+    Q[(i, i)] += 0.5 * cov.iloc[i, i]
 
 for i, j in G.edges:
     Q[(i, j)] += cov.iloc[i, j]
