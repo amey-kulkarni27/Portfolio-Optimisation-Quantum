@@ -30,7 +30,7 @@ for i in range(N):
 
 # Objective function
 for i in range(N):
-    Q[(i, i)] += cov.iloc[i, i]
+    Q[(i, i)] += 0.5 * cov.iloc[i, i]
 
 for i, j in G.edges:
     Q[(i, j)] += cov.iloc[i, j]
