@@ -4,11 +4,12 @@ import pandas as pd
 from dwave.system import DWaveSampler, EmbeddingComposite
 
 N = 4 # Number of stocks
-sig_p = 0.9 # Expected return from n stocks (not average currently)
-f = 3 # Fixed number of stocks that can be chosen
-precision_bits = 3 # For each stock, this is the precision of its weight
-dim = N * precision_bits # dim stands for matrix dimensions
+precision_bits = 6 # For each stock, this is the precision of its weight
 max_wt = 1.0 - 1.0 / pow(2, precision_bits)
+dim = N * precision_bits # dim stands for matrix dimensions
+
+sig_p = 0.9 * max_wt # Expected return from n stocks (not average currently)
+f = 3 * max_wt # Fixed number of stocks that can be chosen
 
 G = nx.Graph()
 G.add_edges_from([(i, j) for i in range(dim) for j in range(i + 1, dim)])
@@ -72,11 +73,15 @@ print(sampleset)
 
 # For the lowest energy, find the actual return
 actual_return = 0.0
+wts = [0 for i in range(N)]
+
 distribution = sampleset.first.sample
 for s_num in distribution.keys():
     if(distribution[s_num] == 1):
         i = s_num // precision_bits # Stock number
         p = s_num % precision_bits + 1 # Bit number
+        wts[i] += 1 / pow(2, p)
         actual_return += returns.iloc[i] / pow(2, p)
 
+print(wts)
 print(actual_return)
