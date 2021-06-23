@@ -4,8 +4,8 @@ import pandas as pd
 from dwave.system import DWaveSampler, EmbeddingComposite
 import math
 
-N = 10 # Number of stocks
-precision_bits = 7 # For each stock, this is the precision of its weight
+N = 25 # Number of stocks
+precision_bits = 4 # For each stock, this is the precision of its weight
 max_wt = 1.0 - 1.0 / pow(2, precision_bits)
 dim = N * precision_bits # dim stands for matrix dimensions
 
@@ -67,9 +67,9 @@ for d in range(dim):
 
 
 sampler = EmbeddingComposite(DWaveSampler())
-print("Response Ready")
-sampleset = sampler.sample_qubo(Q, num_reads=10, chain_strength=1)
 print("Response Sent")
+sampleset = sampler.sample_qubo(Q, num_reads=10, chain_strength=1)
+print("Response Received")
 
 # Print the entire sampleset, that is, the entire table
 print(sampleset)
