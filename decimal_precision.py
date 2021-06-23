@@ -2,14 +2,15 @@ import networkx as nx
 from collections import defaultdict
 import pandas as pd
 from dwave.system import DWaveSampler, EmbeddingComposite
+import math
 
-N = 4 # Number of stocks
-precision_bits = 6 # For each stock, this is the precision of its weight
+N = 10 # Number of stocks
+precision_bits = 7 # For each stock, this is the precision of its weight
 max_wt = 1.0 - 1.0 / pow(2, precision_bits)
 dim = N * precision_bits # dim stands for matrix dimensions
 
-sig_p = 0.9 * max_wt # Expected return from n stocks (not average currently)
 f = 3 * max_wt # Fixed number of stocks that can be chosen
+sig_p = 0.3 * f # Expected return from n stocks (not average currently)
 
 G = nx.Graph()
 G.add_edges_from([(i, j) for i in range(dim) for j in range(i + 1, dim)])
@@ -22,7 +23,7 @@ returns = pd.read_csv("mean_returns.csv")
 Q = defaultdict(int)
 
 # Constraint1 minimises the difference between expected return and actual return
-lagrange1 = 1
+lagrange1 = 0.5
 for d in range(dim):
     i = d // precision_bits # The stock number
     p = d % precision_bits + 1 # The p^th of the bits we are using to represent the i^th stock
@@ -36,7 +37,7 @@ for d in range(dim):
 
 
 # Constraint2 specifying only f stocks should be used
-lagrange2 = 1
+lagrange2 = 0.1
 for d in range(dim):
     i = d // precision_bits # The stock number
     p = d % precision_bits + 1 # The p^th of the bits we are using to represent the i^th stock
@@ -66,22 +67,51 @@ for d in range(dim):
 
 
 sampler = EmbeddingComposite(DWaveSampler())
+print("Response Ready")
 sampleset = sampler.sample_qubo(Q, num_reads=10, chain_strength=1)
+print("Response Sent")
 
 # Print the entire sampleset, that is, the entire table
 print(sampleset)
 
 # For the lowest energy, find the actual return
 actual_return = 0.0
-wts = [0 for i in range(N)]
 
-distribution = sampleset.first.sample
-for s_num in distribution.keys():
-    if(distribution[s_num] == 1):
-        i = s_num // precision_bits # Stock number
-        p = s_num % precision_bits + 1 # Bit number
-        wts[i] += 1 / pow(2, p)
-        actual_return += returns.iloc[i] / pow(2, p)
+# distribution = sampleset.first.sample
 
-print(wts)
-print(actual_return)
+first_few = 5
+distributions = []
+
+for sample, energy in sampleset.data(['sample', 'energy']):
+    distributions.append(sample)
+
+ctr = 0
+for distribution in distributions:
+    wts = [0 for i in range(N)]
+    actual_return = 0.0
+    for s_num in distribution.keys():
+        if(distribution[s_num] == 1):
+            i = s_num // precision_bits # Stock number
+            p = s_num % precision_bits + 1 # Bit number
+            wts[i] += 1 / pow(2, p)
+            actual_return += returns.iloc[i] / pow(2, p)
+    
+    actual_return /= sum(wts)
+    wts = [wts[i] / sum(wts) for i in range(len(wts))]
+
+    volatility = 0.0
+    for i in range(N):
+        for j in range(N):
+            volatility += wts[i] * wts[j] * cov.iloc[i, j]
+
+    print("Weights: ", wts)
+    print("Returns: ", actual_return)
+    print("Volatility: ", math.sqrt(volatility))
+    ctr += 1
+
+
+# print("Weights: ", wts)
+# print("Returns: ", actual_return)
+# print("Volatility: ", math.sqrt(volatility))
+
+print("Time Spent in Quantum Computer: ",sampleset.info["timing"]["qpu_access_time"]/1000,"Milli Seconds")
