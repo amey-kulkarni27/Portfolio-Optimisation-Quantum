@@ -20,6 +20,11 @@ The objective function we want to minimise is the investment risk $R$ incurred. 
 $$ R = \sum\limits_{i = 1}^{n}\sigma_{ii}x_i^2 + \sum\limits_{i = 1}^{n}\sum\limits_{j = i + 1}^{n}\sigma_{ij}x_ix_j$$
 where $\sigma_{ij}$ is the covariance between the $i^{th}$ and the $j^{th}$ stocks. ($\sigma_{ii}$ is the variance of
 the $i^{th}$ stock.)
+\section{Fixed number of Stocks Constraint}
+We want to allow exactly $f$ stocks, hence the following constraint-
+$$(\sum\limits_{i = 1}^{n} x_i - f)^2 = 0$$
+This gives a quadratic form equation. To satisfy this, we need exactly $f$ many $x_i$ set to $1$.
+\section{Expected Return Constraint}
 \end{document}
 
 
