@@ -4,13 +4,14 @@ import pandas as pd
 from dwave.system import DWaveSampler, EmbeddingComposite
 import math
 
-N = 25 # Number of stocks
-precision_bits = 4 # For each stock, this is the precision of its weight
+N = 5 # Number of stocks
+precision_bits = 6 # For each stock, this is the precision of its weight
 max_wt = 1.0 - 1.0 / pow(2, precision_bits)
 dim = N * precision_bits # dim stands for matrix dimensions
 
 f = 3 * max_wt # Fixed number of stocks that can be chosen
-sig_p = 0.3 * f # Expected return from n stocks (not average currently)
+expected_return = 0.3
+sig_p = expected_return * f # Expected return from n stocks (not average currently)
 
 G = nx.Graph()
 G.add_edges_from([(i, j) for i in range(dim) for j in range(i + 1, dim)])
@@ -104,6 +105,7 @@ for distribution in distributions:
         for j in range(N):
             volatility += wts[i] * wts[j] * cov.iloc[i, j]
 
+    print("\n\n Portfolio " + str(ctr))
     print("Weights: ", wts)
     print("Returns: ", actual_return)
     print("Volatility: ", math.sqrt(volatility))
@@ -114,4 +116,4 @@ for distribution in distributions:
 # print("Returns: ", actual_return)
 # print("Volatility: ", math.sqrt(volatility))
 
-print("Time Spent in Quantum Computer: ",sampleset.info["timing"]["qpu_access_time"]/1000,"Milli Seconds")
+print("\n\nTime Spent in Quantum Computer: ",sampleset.info["timing"]["qpu_access_time"]/1000,"Milli Seconds")
