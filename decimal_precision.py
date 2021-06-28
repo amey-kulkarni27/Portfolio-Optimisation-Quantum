@@ -25,7 +25,7 @@ Q = defaultdict(int)
 
 # Constraint1 minimises the difference between expected return and actual return
 lagrange1 = 0.5
-for d in range(dim):
+for d in range(dim): # N x precision
     i = d // precision_bits # The stock number
     p = d % precision_bits + 1 # The p^th of the bits we are using to represent the i^th stock
     ri = returns.iloc[i] # i^th stock returns
