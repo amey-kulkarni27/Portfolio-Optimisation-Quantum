@@ -16,7 +16,9 @@ f = 3 * max_wt # Fixed number of stocks that can be chosen
 expected_return = 0.3
 sig_p = expected_return * f # Expected return from n stocks (not average currently)
 
-df = df.iloc[:, :N + 1] # We need only the first N + 1 columns
+df['Date'] = pd.to_datetime(df['Date'])
+df.set_index('Date', inplace=True)
+df = df.iloc[:, :N] # We need only the first N + 1 columns, 1st column is the date column
 print(df.head())
 
 G = nx.Graph()
@@ -99,20 +101,26 @@ def find_portfolio(principal):
     # For a month
     return (1 + actual_return / 12) * principal
 
-def update_returns(months):
-    df_new = df.iloc[:(months + 48) * 21 + 1, :]
+def update_returns(start_date, end_date):
+    df_new = df.loc[start_date: end_date]
+    print(df_new)
     rets = df_new.pct_change()
     return rets
 
 
 rebalance_interval = 21 # 21 working days approximately in a month
-MONTHS = 12 # We rebalance for a year
+MONTHS = 1 # We rebalance for a year
 principal = 10000 # We start out with
+start_year = 2018
+start_date = "2013-1"
 
-for _ in range(MONTHS):
+for m in range(1, MONTHS + 1):
     # principal = find_portfolio(principal)
-    print(_ + 1, principal)
-    daily_returns = update_returns(_ + 1)
+    print(m + 1, principal)
+    yr = m // 12
+    month = m % 12
+    end_date = str(start_year + yr) + "-" + str(month)
+    daily_returns = update_returns(start_date, end_date)
     cov = daily_returns.cov() * 252
     returns = daily_returns.mean(axis=0) * 252
 
