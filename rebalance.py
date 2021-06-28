@@ -5,15 +5,19 @@ from dwave.system import DWaveSampler, EmbeddingComposite
 import math
 
 
+df = pd.read_csv("8yrs_data.csv")
 
 N = 5 # Number of stocks
-precision_bits = 5 # For each stock, this is the precision of its weight
+precision_bits = 2 # For each stock, this is the precision of its weight
 max_wt = 1.0 - 1.0 / pow(2, precision_bits)
 dim = N * precision_bits # dim stands for matrix dimensions
 
 f = 3 * max_wt # Fixed number of stocks that can be chosen
 expected_return = 0.3
 sig_p = expected_return * f # Expected return from n stocks (not average currently)
+
+df = df.iloc[:, :N + 1] # We need only the first N + 1 columns
+print(df.head())
 
 G = nx.Graph()
 G.add_edges_from([(i, j) for i in range(dim) for j in range(i + 1, dim)])
@@ -91,13 +95,25 @@ def find_portfolio(principal):
     for s_num in distribution.keys():
         if(distribution[s_num] == 1):
             actual_return += returns.iloc[s_num]
-    
-    return actual_return
+    # Actual return percentage over how much time?
+    # For a month
+    return (1 + actual_return / 12) * principal
+
+def update_returns(months):
+    df_new = df.iloc[:(months + 48) * 21 + 1, :]
+    rets = df_new.pct_change()
+    return rets
 
 
 rebalance_interval = 21 # 21 working days approximately in a month
-MONTHS = 54 # We rebalance for 54 months, till the start of June
+MONTHS = 12 # We rebalance for a year
 principal = 10000 # We start out with
 
 for _ in range(MONTHS):
-    principal = find_portfolio(principal,)
+    # principal = find_portfolio(principal)
+    print(_ + 1, principal)
+    daily_returns = update_returns(_ + 1)
+    cov = daily_returns.cov() * 252
+    returns = daily_returns.mean(axis=0) * 252
+
+# print(principal)
