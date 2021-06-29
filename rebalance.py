@@ -8,12 +8,12 @@ import math
 df = pd.read_csv("8yrs_data.csv")
 
 N = 5 # Number of stocks
-precision_bits = 2 # For each stock, this is the precision of its weight
+precision_bits = 5 # For each stock, this is the precision of its weight
 max_wt = 1.0 - 1.0 / pow(2, precision_bits)
 dim = N * precision_bits # dim stands for matrix dimensions
 
 f = 3 * max_wt # Fixed number of stocks that can be chosen
-expected_return = 0.3
+expected_return = 0.45
 sig_p = expected_return * f # Expected return from n stocks (not average currently)
 
 df['Date'] = pd.to_datetime(df['Date'])
@@ -38,7 +38,7 @@ def find_portfolio(principal, start_year, m):
     Q = defaultdict(int)
 
     # Constraint1 minimises the difference between expected return and actual return
-    lagrange1 = 0.5
+    lagrange1 = 2
     for d in range(dim):
         i = d // precision_bits # The stock number
         p = d % precision_bits + 1 # The p^th of the bits we are using to represent the i^th stock
@@ -52,7 +52,7 @@ def find_portfolio(principal, start_year, m):
 
 
     # Constraint2 specifying only f stocks should be used
-    lagrange2 = 0.1
+    lagrange2 = 1
     for d in range(dim):
         i = d // precision_bits # The stock number
         p = d % precision_bits + 1 # The p^th of the bits we are using to represent the i^th stock
@@ -99,7 +99,8 @@ def find_portfolio(principal, start_year, m):
             p = s_num % precision_bits + 1 # Bit number
             wts[i] += 1 / pow(2, p)
     # For a month
-
+    
+    # wts = [1.0 for i in range(N)]
     wts = [wts[i] / sum(wts) for i in range(len(wts))]
 
     # Distribution of principal for each stock
@@ -139,7 +140,7 @@ def update_returns(start_date, end_date):
 
 rebalance_interval = 21 # 21 working days approximately in a month
 MONTHS = 12 # We rebalance for a year
-principal = 10000 # We start out with
+principal = 1000000 # We start out with
 start_year = 2017
 start_date = "2013-1"
 
