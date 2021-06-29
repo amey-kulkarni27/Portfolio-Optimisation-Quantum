@@ -33,7 +33,7 @@ def find_portfolio(principal, start_year, m):
     Given the principal amount, find best portfolio
     Return amount earned at the end of the month
     '''
-    '''    
+    
     # The matrix where we add the objective and the constraint
     Q = defaultdict(int)
 
@@ -82,29 +82,29 @@ def find_portfolio(principal, start_year, m):
 
 
     sampler = EmbeddingComposite(DWaveSampler())
-    print("Response Sent")
+    # print("Response Sent")
     sampleset = sampler.sample_qubo(Q, num_reads=10, chain_strength=1)
-    print("Response Received")
+    # print("Response Received")
 
     # Print the entire sampleset, that is, the entire table
-    print(sampleset)
-    '''
+    # print(sampleset)
+    
 
-    wts = [0.2 for i in range(N)]
+    wts = [0.0 for i in range(N)]
 
-    # distribution = sampleset.first.sample
-    # for s_num in distribution.keys():
-    #     if(distribution[s_num] == 1):
-    #         i = s_num // precision_bits # Stock number
-    #         p = s_num % precision_bits + 1 # Bit number
-    #         wts[i] += 1 / pow(2, p)
-    # # For a month
+    distribution = sampleset.first.sample
+    for s_num in distribution.keys():
+        if(distribution[s_num] == 1):
+            i = s_num // precision_bits # Stock number
+            p = s_num % precision_bits + 1 # Bit number
+            wts[i] += 1 / pow(2, p)
+    # For a month
 
     wts = [wts[i] / sum(wts) for i in range(len(wts))]
 
     # Distribution of principal for each stock
     budget = [principal * wts[i] for i in range(N)]
-
+    
     # The month in which we are going to do the transaction
     yr = m // 12
     month = m % 12 + 1
@@ -126,8 +126,6 @@ def find_portfolio(principal, start_year, m):
     leftover = principal - sum(money_spent)
 
     money_gained = [stocks_bought[i] * selling_prices.iloc[0, i] for i in range(N)]
-    print(money_spent)
-    print(money_gained)
 
     # We buy stocks from the first day of the month, and sell on the last day
     return sum(money_gained) + leftover
@@ -142,7 +140,7 @@ def update_returns(start_date, end_date):
 rebalance_interval = 21 # 21 working days approximately in a month
 MONTHS = 12 # We rebalance for a year
 principal = 10000 # We start out with
-start_year = 2018
+start_year = 2017
 start_date = "2013-1"
 
 for m in range(MONTHS):
