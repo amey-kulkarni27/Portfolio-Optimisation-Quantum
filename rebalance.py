@@ -92,14 +92,21 @@ def find_portfolio(principal):
     # For the lowest energy, find the actual return
     actual_return = 0.0
 
+    wts = [0 for i in range(N)]
+
     distribution = sampleset.first.sample
     for s_num in distribution.keys():
         if(distribution[s_num] == 1):
             i = s_num // precision_bits # Stock number
             p = s_num % precision_bits + 1 # Bit number
-            actual_return += returns.iloc[i] / pow(2, p)
-    # Actual return percentage over how much time?
+            wts[i] += 1 / pow(2, p)
     # For a month
+
+    wts = [wts[i] / sum(wts) for i in range(len(wts))]
+    budget = [principal * wts[i] for i in range(N)]
+    stocks_bought = [budget[i] // ]
+
+    # We buy stocks from the first day of the month, and sell on the last day
     return (1 + actual_return / 12) * principal
 
 def update_returns(start_date, end_date):
@@ -110,8 +117,8 @@ def update_returns(start_date, end_date):
 
 
 rebalance_interval = 21 # 21 working days approximately in a month
-MONTHS = 37 # We rebalance for a year
-principal = 10000 # We start out with
+MONTHS = 2 # We rebalance for a year
+principal = 1000000 # We start out with
 start_year = 2018
 start_date = "2013-1"
 
