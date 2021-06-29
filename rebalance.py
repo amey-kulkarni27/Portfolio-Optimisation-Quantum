@@ -138,8 +138,8 @@ def update_returns(start_date, end_date):
 MONTHS = 12 # We rebalance for a year
 principal = 1000000 # We start out with
 start_data = "2013-1"
-end_data = "2016-12"
-timeline_start = 2017
+end_data = "2015-12"
+timeline_start = 2016
 
 return_pct = df.pct_change()
 # Create the covariance matrix and returns list
