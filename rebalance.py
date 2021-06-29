@@ -19,7 +19,6 @@ sig_p = expected_return * f # Expected return from n stocks (not average current
 df['Date'] = pd.to_datetime(df['Date'])
 df.set_index('Date', inplace=True)
 df = df.iloc[:, :N] # We need only the first N + 1 columns, 1st column is the date column
-print(df.head())
 
 G = nx.Graph()
 G.add_edges_from([(i, j) for i in range(dim) for j in range(i + 1, dim)])
@@ -103,13 +102,13 @@ def find_portfolio(principal):
 
 def update_returns(start_date, end_date):
     df_new = df.loc[start_date: end_date]
-    print(df_new)
+    # print(df_new)
     rets = df_new.pct_change()
     return rets
 
 
 rebalance_interval = 21 # 21 working days approximately in a month
-MONTHS = 1 # We rebalance for a year
+MONTHS = 2 # We rebalance for a year
 principal = 10000 # We start out with
 start_year = 2018
 start_date = "2013-1"
