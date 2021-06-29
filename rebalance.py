@@ -11,21 +11,25 @@ gold = True
 df = pd.read_csv("gold_included.csv")
 
 N = 5 # Number of stocks
-precision_bits = 5 # For each stock, this is the precision of its weight
-max_wt = 1.0 - 1.0 / pow(2, precision_bits)
-dim = N * precision_bits # dim stands for matrix dimensions
-
-f = 3 * max_wt # Fixed number of stocks that can be chosen
-expected_return = 0.45
-sig_p = expected_return * f # Expected return from n stocks (not average currently)
 
 df['Date'] = pd.to_datetime(df['Date'])
 df.set_index('Date', inplace=True)
 if gold:
     df = df.iloc[:, np.r_[:N, -1]] # We need only the first N columns, 1st column is the date column
     df = df.fillna(method='ffill')
+    N += 1
 else:
     df = df.iloc[:, :N]
+
+precision_bits = 5 # For each stock, this is the precision of its weight
+max_wt = 1.0 - 1.0 / pow(2, precision_bits)
+dim = N * precision_bits # dim stands for matrix dimensions
+
+f = 3 * max_wt # Fixed number of stocks that can be chosen
+expected_return = 0.15
+sig_p = expected_return * f # Expected return from n stocks (not average currently)
+
+
 
 G = nx.Graph()
 G.add_edges_from([(i, j) for i in range(dim) for j in range(i + 1, dim)])
@@ -104,11 +108,11 @@ def find_portfolio(principal, start_year, m):
             wts[i] += 1 / pow(2, p)
     # For a month
     '''
-    wts = [random.random() for i in range(N + gold)]
+    wts = [1 for i in range(N)]
     wts = [wts[i] / sum(wts) for i in range(len(wts))]
 
     # Distribution of principal for each stock
-    budget = [principal * wts[i] for i in range(N + gold)]
+    budget = [principal * wts[i] for i in range(N)]
     # print(budget)
     
     # The month in which we are going to do the transaction
@@ -124,14 +128,14 @@ def find_portfolio(principal, start_year, m):
     selling_prices = month_prices.iloc[-1:, :]
 
     # Number bought for each stock
-    stocks_bought = [budget[i] // buying_prices.iloc[0, i] for i in range(N + gold)]
+    stocks_bought = [budget[i] // buying_prices.iloc[0, i] for i in range(N)]
 
     # Money expended in the process
-    money_spent = [stocks_bought[i] * buying_prices.iloc[0, i] for i in range(N + gold)]
+    money_spent = [stocks_bought[i] * buying_prices.iloc[0, i] for i in range(N)]
     # Money leftover, due to rounding
     leftover = principal - sum(money_spent)
 
-    money_gained = [stocks_bought[i] * selling_prices.iloc[0, i] for i in range(N + gold)]
+    money_gained = [stocks_bought[i] * selling_prices.iloc[0, i] for i in range(N)]
 
     # We buy stocks from the first day of the month, and sell on the last day
     return sum(money_gained) + leftover
