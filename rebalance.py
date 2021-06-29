@@ -1,12 +1,14 @@
 import networkx as nx
 from collections import defaultdict
+import numpy as np
 import pandas as pd
 from dwave.system import DWaveSampler, EmbeddingComposite
 import math
 import random
 
+gold = True
 
-df = pd.read_csv("8yrs_data.csv")
+df = pd.read_csv("gold_included.csv")
 
 N = 5 # Number of stocks
 precision_bits = 5 # For each stock, this is the precision of its weight
@@ -19,7 +21,11 @@ sig_p = expected_return * f # Expected return from n stocks (not average current
 
 df['Date'] = pd.to_datetime(df['Date'])
 df.set_index('Date', inplace=True)
-df = df.iloc[:, :N] # We need only the first N + 1 columns, 1st column is the date column
+if gold:
+    df = df.iloc[:, np.r_[:N, -1]] # We need only the first N columns, 1st column is the date column
+    df = df.fillna(method='ffill')
+else:
+    df = df.iloc[:, :N]
 
 G = nx.Graph()
 G.add_edges_from([(i, j) for i in range(dim) for j in range(i + 1, dim)])
@@ -98,11 +104,12 @@ def find_portfolio(principal, start_year, m):
             wts[i] += 1 / pow(2, p)
     # For a month
     '''
-    wts = [random.random() for i in range(N)]
+    wts = [random.random() for i in range(N + gold)]
     wts = [wts[i] / sum(wts) for i in range(len(wts))]
 
     # Distribution of principal for each stock
-    budget = [principal * wts[i] for i in range(N)]
+    budget = [principal * wts[i] for i in range(N + gold)]
+    # print(budget)
     
     # The month in which we are going to do the transaction
     yr = m // 12
@@ -117,14 +124,14 @@ def find_portfolio(principal, start_year, m):
     selling_prices = month_prices.iloc[-1:, :]
 
     # Number bought for each stock
-    stocks_bought = [budget[i] // buying_prices.iloc[0, i] for i in range(N)]
+    stocks_bought = [budget[i] // buying_prices.iloc[0, i] for i in range(N + gold)]
 
     # Money expended in the process
-    money_spent = [stocks_bought[i] * buying_prices.iloc[0, i] for i in range(N)]
+    money_spent = [stocks_bought[i] * buying_prices.iloc[0, i] for i in range(N + gold)]
     # Money leftover, due to rounding
     leftover = principal - sum(money_spent)
 
-    money_gained = [stocks_bought[i] * selling_prices.iloc[0, i] for i in range(N)]
+    money_gained = [stocks_bought[i] * selling_prices.iloc[0, i] for i in range(N + gold)]
 
     # We buy stocks from the first day of the month, and sell on the last day
     return sum(money_gained) + leftover
@@ -137,7 +144,7 @@ def update_returns(start_date, end_date):
 
 
 MONTHS = 12 # We rebalance for a year
-principal = 1000000 # We start out with
+principal = 100000 # We start out with
 start_data = "2013-1"
 end_data = "2015-12"
 timeline_start = 2016
@@ -152,6 +159,7 @@ for m in range(MONTHS):
 
     yr = m // 12
     month = m % 12 + 1
+    # print(month, principal)
     end_date = str(timeline_start + yr) + "-" + str(month)
 
     daily_returns = update_returns(start_data, end_date)
