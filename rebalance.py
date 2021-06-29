@@ -3,6 +3,7 @@ from collections import defaultdict
 import pandas as pd
 from dwave.system import DWaveSampler, EmbeddingComposite
 import math
+import random
 
 
 df = pd.read_csv("8yrs_data.csv")
@@ -97,7 +98,7 @@ def find_portfolio(principal, start_year, m):
             wts[i] += 1 / pow(2, p)
     # For a month
     '''
-    wts = [1.0 for i in range(N)]
+    wts = [random.random() for i in range(N)]
     wts = [wts[i] / sum(wts) for i in range(len(wts))]
 
     # Distribution of principal for each stock
