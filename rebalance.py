@@ -95,7 +95,9 @@ def find_portfolio(principal):
     distribution = sampleset.first.sample
     for s_num in distribution.keys():
         if(distribution[s_num] == 1):
-            actual_return += returns.iloc[s_num]
+            i = s_num // precision_bits # Stock number
+            p = s_num % precision_bits + 1 # Bit number
+            actual_return += returns.iloc[i] / pow(2, p)
     # Actual return percentage over how much time?
     # For a month
     return (1 + actual_return / 12) * principal
@@ -108,19 +110,20 @@ def update_returns(start_date, end_date):
 
 
 rebalance_interval = 21 # 21 working days approximately in a month
-MONTHS = 2 # We rebalance for a year
+MONTHS = 37 # We rebalance for a year
 principal = 10000 # We start out with
 start_year = 2018
 start_date = "2013-1"
 
-for m in range(1, MONTHS + 1):
-    # principal = find_portfolio(principal)
-    print(m + 1, principal)
+for m in range(MONTHS):
+    principal = find_portfolio(principal)
+    # print(m, principal)
     yr = m // 12
-    month = m % 12
+    month = m % 12 + 1
     end_date = str(start_year + yr) + "-" + str(month)
+    print(end_date)
     daily_returns = update_returns(start_date, end_date)
     cov = daily_returns.cov() * 252
     returns = daily_returns.mean(axis=0) * 252
 
-# print(principal)
+print(principal)
