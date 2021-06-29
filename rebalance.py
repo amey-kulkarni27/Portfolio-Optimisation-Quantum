@@ -23,9 +23,6 @@ df = df.iloc[:, :N] # We need only the first N + 1 columns, 1st column is the da
 G = nx.Graph()
 G.add_edges_from([(i, j) for i in range(dim) for j in range(i + 1, dim)])
 
-# Create the covariance matrix and returns list
-cov = pd.read_csv("cov_matrix_4yrs.csv")
-returns = pd.read_csv("mean_returns_4yrs.csv")
 
 
 def find_portfolio(principal, start_year, m):
@@ -33,7 +30,7 @@ def find_portfolio(principal, start_year, m):
     Given the principal amount, find best portfolio
     Return amount earned at the end of the month
     '''
-    
+    '''
     # The matrix where we add the objective and the constraint
     Q = defaultdict(int)
 
@@ -42,12 +39,12 @@ def find_portfolio(principal, start_year, m):
     for d in range(dim):
         i = d // precision_bits # The stock number
         p = d % precision_bits + 1 # The p^th of the bits we are using to represent the i^th stock
-        ri = returns.iloc[i] # i^th stock returns
+        ri = means.iloc[i] # i^th stock returns
         Q[(d, d)] += (-2 * sig_p * ri / pow(2, p) + ri * ri / pow(2, 2 * p)) * lagrange1
         for d_dash in range(d + 1, dim):
             j = d_dash // precision_bits # The stock number
             q = d_dash % precision_bits + 1 # The q^th of the bits we are using to represent the j^th stock
-            rj = returns.iloc[j] # j^th stock returns
+            rj = means.iloc[j] # j^th stock returns
             Q[(d, d_dash)] += 2 * ri * rj * lagrange1 / pow(2, p + q)
 
 
@@ -99,8 +96,8 @@ def find_portfolio(principal, start_year, m):
             p = s_num % precision_bits + 1 # Bit number
             wts[i] += 1 / pow(2, p)
     # For a month
-    
-    # wts = [1.0 for i in range(N)]
+    '''
+    wts = [1.0 for i in range(N)]
     wts = [wts[i] / sum(wts) for i in range(len(wts))]
 
     # Distribution of principal for each stock
@@ -138,21 +135,26 @@ def update_returns(start_date, end_date):
     return rets
 
 
-rebalance_interval = 21 # 21 working days approximately in a month
 MONTHS = 12 # We rebalance for a year
 principal = 1000000 # We start out with
-start_year = 2017
-start_date = "2013-1"
+start_data = "2013-1"
+end_data = "2016-12"
+timeline_start = 2017
+
+return_pct = df.pct_change()
+# Create the covariance matrix and returns list
+cov = return_pct.cov() * 252
+means = return_pct.mean(axis=0) * 252
 
 for m in range(MONTHS):
-    principal = find_portfolio(principal, start_year, m)
+    principal = find_portfolio(principal, timeline_start, m)
 
     yr = m // 12
     month = m % 12 + 1
-    end_date = str(start_year + yr) + "-" + str(month)
+    end_date = str(timeline_start + yr) + "-" + str(month)
 
-    daily_returns = update_returns(start_date, end_date)
+    daily_returns = update_returns(start_data, end_date)
     cov = daily_returns.cov() * 252
-    returns = daily_returns.mean(axis=0) * 252
+    means = daily_returns.mean(axis=0) * 252
 
 print(principal)
