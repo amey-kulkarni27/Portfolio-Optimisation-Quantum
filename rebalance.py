@@ -28,12 +28,12 @@ cov = pd.read_csv("cov_matrix_4yrs.csv")
 returns = pd.read_csv("mean_returns_4yrs.csv")
 
 
-def find_portfolio(principal):
+def find_portfolio(principal, start_year, m):
     '''
     Given the principal amount, find best portfolio
     Return amount earned at the end of the month
     '''
-    
+    '''    
     # The matrix where we add the objective and the constraint
     Q = defaultdict(int)
 
@@ -88,26 +88,49 @@ def find_portfolio(principal):
 
     # Print the entire sampleset, that is, the entire table
     print(sampleset)
+    '''
 
-    # For the lowest energy, find the actual return
-    actual_return = 0.0
+    wts = [0.2 for i in range(N)]
 
-    wts = [0 for i in range(N)]
-
-    distribution = sampleset.first.sample
-    for s_num in distribution.keys():
-        if(distribution[s_num] == 1):
-            i = s_num // precision_bits # Stock number
-            p = s_num % precision_bits + 1 # Bit number
-            wts[i] += 1 / pow(2, p)
-    # For a month
+    # distribution = sampleset.first.sample
+    # for s_num in distribution.keys():
+    #     if(distribution[s_num] == 1):
+    #         i = s_num // precision_bits # Stock number
+    #         p = s_num % precision_bits + 1 # Bit number
+    #         wts[i] += 1 / pow(2, p)
+    # # For a month
 
     wts = [wts[i] / sum(wts) for i in range(len(wts))]
+
+    # Distribution of principal for each stock
     budget = [principal * wts[i] for i in range(N)]
-    stocks_bought = [budget[i] // ]
+
+    # The month in which we are going to do the transaction
+    yr = m // 12
+    month = m % 12 + 1
+    date = str(start_year + yr) + "-" + str(month)
+
+    # Stock prices in that month
+    month_prices = df.loc[date]
+    # Buy on the first day of the month
+    buying_prices = month_prices.iloc[:1, :]
+    # Sell on the last day of the month
+    selling_prices = month_prices.iloc[-1:, :]
+
+    # Number bought for each stock
+    stocks_bought = [budget[i] // buying_prices.iloc[0, i] for i in range(N)]
+
+    # Money expended in the process
+    money_spent = [stocks_bought[i] * buying_prices.iloc[0, i] for i in range(N)]
+    # Money leftover, due to rounding
+    leftover = principal - sum(money_spent)
+
+    money_gained = [stocks_bought[i] * selling_prices.iloc[0, i] for i in range(N)]
+    print(money_spent)
+    print(money_gained)
 
     # We buy stocks from the first day of the month, and sell on the last day
-    return (1 + actual_return / 12) * principal
+    return sum(money_gained) + leftover
 
 def update_returns(start_date, end_date):
     df_new = df.loc[start_date: end_date]
@@ -117,18 +140,18 @@ def update_returns(start_date, end_date):
 
 
 rebalance_interval = 21 # 21 working days approximately in a month
-MONTHS = 2 # We rebalance for a year
-principal = 1000000 # We start out with
+MONTHS = 12 # We rebalance for a year
+principal = 10000 # We start out with
 start_year = 2018
 start_date = "2013-1"
 
 for m in range(MONTHS):
-    principal = find_portfolio(principal)
-    # print(m, principal)
+    principal = find_portfolio(principal, start_year, m)
+
     yr = m // 12
     month = m % 12 + 1
     end_date = str(start_year + yr) + "-" + str(month)
-    print(end_date)
+
     daily_returns = update_returns(start_date, end_date)
     cov = daily_returns.cov() * 252
     returns = daily_returns.mean(axis=0) * 252
