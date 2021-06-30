@@ -10,7 +10,7 @@ gold = True
 
 df = pd.read_csv("gold_included.csv")
 
-N = 5 # Number of stocks
+N = 2 # Number of stocks
 
 df['Date'] = pd.to_datetime(df['Date'])
 df.set_index('Date', inplace=True)
@@ -21,12 +21,12 @@ if gold:
 else:
     df = df.iloc[:, :N]
 
-precision_bits = 5 # For each stock, this is the precision of its weight
+precision_bits = 6 # For each stock, this is the precision of its weight
 max_wt = 1.0 - 1.0 / pow(2, precision_bits)
 dim = N * precision_bits # dim stands for matrix dimensions
 
-f = 3 * max_wt # Fixed number of stocks that can be chosen
-expected_return = 0.15
+f = N * max_wt # Fixed number of stocks that can be chosen
+expected_return = 0.02
 sig_p = expected_return * f # Expected return from n stocks (not average currently)
 
 
@@ -41,7 +41,7 @@ def find_portfolio(principal, start_year, m):
     Given the principal amount, find best portfolio
     Return amount earned at the end of the month
     '''
-    '''
+    
     # The matrix where we add the objective and the constraint
     Q = defaultdict(int)
 
@@ -60,7 +60,7 @@ def find_portfolio(principal, start_year, m):
 
 
     # Constraint2 specifying only f stocks should be used
-    lagrange2 = 1
+    lagrange2 = 0.4
     for d in range(dim):
         i = d // precision_bits # The stock number
         p = d % precision_bits + 1 # The p^th of the bits we are using to represent the i^th stock
@@ -107,8 +107,8 @@ def find_portfolio(principal, start_year, m):
             p = s_num % precision_bits + 1 # Bit number
             wts[i] += 1 / pow(2, p)
     # For a month
-    '''
-    wts = [1 for i in range(N)]
+    
+    # wts = [random.random() for i in range(N)]
     wts = [wts[i] / sum(wts) for i in range(len(wts))]
 
     # Distribution of principal for each stock
@@ -147,11 +147,11 @@ def update_returns(start_date, end_date):
     return rets
 
 
-MONTHS = 12 # We rebalance for a year
+MONTHS = 2 # We rebalance for a year
 principal = 100000 # We start out with
 start_data = "2013-1"
-end_data = "2015-12"
-timeline_start = 2016
+end_data = "2018-12"
+timeline_start = 2019
 
 return_pct = df.pct_change()
 # Create the covariance matrix and returns list
@@ -159,10 +159,12 @@ cov = return_pct.cov() * 252
 means = return_pct.mean(axis=0) * 252
 
 for m in range(MONTHS):
-    principal = find_portfolio(principal, timeline_start, m)
-
-    yr = m // 12
-    month = m % 12 + 1
+    mdash = 12 * m
+    
+    principal = find_portfolio(principal, timeline_start, mdash)
+    
+    yr = mdash // 12
+    month = mdash % 12 + 1
     # print(month, principal)
     end_date = str(timeline_start + yr) + "-" + str(month)
 
