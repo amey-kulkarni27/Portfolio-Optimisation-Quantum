@@ -26,7 +26,7 @@ max_wt = 1.0 - 1.0 / pow(2, precision_bits)
 dim = N * precision_bits # dim stands for matrix dimensions
 
 f = N * max_wt # Fixed number of stocks that can be chosen
-expected_return = 0.02
+expected_return = 0.1
 sig_p = expected_return * f # Expected return from n stocks (not average currently)
 
 
@@ -41,12 +41,12 @@ def find_portfolio(principal, start_year, m):
     Given the principal amount, find best portfolio
     Return amount earned at the end of the month
     '''
-    '''
+    
     # The matrix where we add the objective and the constraint
     Q = defaultdict(int)
 
     # Constraint1 minimises the difference between expected return and actual return
-    lagrange1 = 2
+    lagrange1 = 1
     for d in range(dim):
         i = d // precision_bits # The stock number
         p = d % precision_bits + 1 # The p^th of the bits we are using to represent the i^th stock
@@ -60,7 +60,7 @@ def find_portfolio(principal, start_year, m):
 
 
     # Constraint2 specifying only f stocks should be used
-    lagrange2 = 0.4
+    lagrange2 = 0.02
     for d in range(dim):
         i = d // precision_bits # The stock number
         p = d % precision_bits + 1 # The p^th of the bits we are using to represent the i^th stock
@@ -107,9 +107,10 @@ def find_portfolio(principal, start_year, m):
             p = s_num % precision_bits + 1 # Bit number
             wts[i] += 1 / pow(2, p)
     # For a month
-    '''
-    wts = [i for i in range(N)]
+    
+    # wts = [i ^ 1 for i in range(N)]
     wts = [wts[i] / sum(wts) for i in range(len(wts))]
+    print(wts)
 
     # Distribution of principal for each stock
     budget = [principal * wts[i] for i in range(N)]
@@ -118,7 +119,9 @@ def find_portfolio(principal, start_year, m):
     # The month in which we are going to do the transaction
     yr = m // 12
     month = m % 12 + 1
-    date = str(start_year + yr) + "-" + str(month)
+    # date = str(start_year + yr) + "-" + str(month) 
+    # When rebalancing yearly
+    date = str(start_year + yr)
 
     # Stock prices in that month
     month_prices = df.loc[date]
@@ -126,6 +129,10 @@ def find_portfolio(principal, start_year, m):
     buying_prices = month_prices.iloc[:1, :]
     # Sell on the last day of the month
     selling_prices = month_prices.iloc[-1:, :]
+
+    print(buying_prices)
+
+    print(selling_prices)
 
     # Number bought for each stock
     stocks_bought = [budget[i] // buying_prices.iloc[0, i] for i in range(N)]
@@ -147,13 +154,13 @@ def update_returns(start_date, end_date):
     return rets
 
 
-MONTHS = 2 # We rebalance for a year
+MONTHS = 1 # We rebalance for a year
 principal = 100000 # We start out with
-start_data = "2008-1"
+start_data = "2010-1"
 end_data = "2010-12"
-timeline_start = 2019
+timeline_start = 2011
 
-return_pct = df.pct_change()
+return_pct = df.loc[start_data: end_data].pct_change()
 # Create the covariance matrix and returns list
 cov = return_pct.cov() * 252
 means = return_pct.mean(axis=0) * 252
