@@ -8,9 +8,9 @@ import random
 
 gold = False
 
-df = pd.read_csv("indian2.csv")
+df = pd.read_csv("indian3.csv")
 
-N = 2 # Number of stocks
+N = 3 # Number of stocks
 
 df['Date'] = pd.to_datetime(df['Date'])
 df.set_index('Date', inplace=True)
@@ -157,8 +157,8 @@ def update_returns(start_date, end_date):
 MONTHS = 1 # We rebalance for a year
 principal = 100000 # We start out with
 start_data = "2010-1"
-end_data = "2010-12"
-timeline_start = 2011
+end_data = "2011-12"
+timeline_start = 2012
 
 return_pct = df.loc[start_data: end_data].pct_change()
 # Create the covariance matrix and returns list
