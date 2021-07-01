@@ -6,9 +6,9 @@ from dwave.system import DWaveSampler, EmbeddingComposite
 import math
 import random
 
-gold = True
+gold = False
 
-df = pd.read_csv("gold_included.csv")
+df = pd.read_csv("indian2.csv")
 
 N = 2 # Number of stocks
 
@@ -41,7 +41,7 @@ def find_portfolio(principal, start_year, m):
     Given the principal amount, find best portfolio
     Return amount earned at the end of the month
     '''
-    
+    '''
     # The matrix where we add the objective and the constraint
     Q = defaultdict(int)
 
@@ -107,8 +107,8 @@ def find_portfolio(principal, start_year, m):
             p = s_num % precision_bits + 1 # Bit number
             wts[i] += 1 / pow(2, p)
     # For a month
-    
-    # wts = [random.random() for i in range(N)]
+    '''
+    wts = [i for i in range(N)]
     wts = [wts[i] / sum(wts) for i in range(len(wts))]
 
     # Distribution of principal for each stock
@@ -149,8 +149,8 @@ def update_returns(start_date, end_date):
 
 MONTHS = 2 # We rebalance for a year
 principal = 100000 # We start out with
-start_data = "2013-1"
-end_data = "2018-12"
+start_data = "2008-1"
+end_data = "2010-12"
 timeline_start = 2019
 
 return_pct = df.pct_change()
