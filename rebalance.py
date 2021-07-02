@@ -26,7 +26,7 @@ max_wt = 1.0 - 1.0 / pow(2, precision_bits)
 dim = N * precision_bits # dim stands for matrix dimensions
 
 f = N * max_wt # Fixed number of stocks that can be chosen
-expected_return = 0.1
+expected_return = 0.15
 sig_p = expected_return * f # Expected return from n stocks (not average currently)
 
 
@@ -108,7 +108,7 @@ def find_portfolio(principal, start_year, m):
             wts[i] += 1 / pow(2, p)
     # For a month
     
-    # wts = [i ^ 1 for i in range(N)]
+    # wts = [1 for i in range(N)]
     wts = [wts[i] / sum(wts) for i in range(len(wts))]
     print(wts)
 
@@ -119,9 +119,9 @@ def find_portfolio(principal, start_year, m):
     # The month in which we are going to do the transaction
     yr = m // 12
     month = m % 12 + 1
-    # date = str(start_year + yr) + "-" + str(month) 
+    date = str(start_year + yr) + "-" + str(month) 
     # When rebalancing yearly
-    date = str(start_year + yr)
+    # date = str(start_year + yr)
 
     # Stock prices in that month
     month_prices = df.loc[date]
@@ -154,7 +154,7 @@ def update_returns(start_date, end_date):
     return rets
 
 
-MONTHS = 1 # We rebalance for a year
+MONTHS = 6 # We rebalance for half a year
 principal = 100000 # We start out with
 start_data = "2010-1"
 end_data = "2011-12"
@@ -166,7 +166,7 @@ cov = return_pct.cov() * 252
 means = return_pct.mean(axis=0) * 252
 
 for m in range(MONTHS):
-    mdash = 12 * m
+    mdash = m
     
     principal = find_portfolio(principal, timeline_start, mdash)
     
