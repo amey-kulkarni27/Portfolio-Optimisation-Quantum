@@ -41,7 +41,7 @@ def find_portfolio(principal, start_year, m):
     Given the principal amount, find best portfolio
     Return amount earned at the end of the month
     '''
-    
+    '''
     # The matrix where we add the objective and the constraint
     Q = defaultdict(int)
 
@@ -107,8 +107,8 @@ def find_portfolio(principal, start_year, m):
             p = s_num % precision_bits + 1 # Bit number
             wts[i] += 1 / pow(2, p)
     # For a month
-    
-    # wts = [1 for i in range(N)]
+    '''
+    wts = [1 for i in range(N)]
     wts = [wts[i] / sum(wts) for i in range(len(wts))]
     print(wts)
 
@@ -130,9 +130,9 @@ def find_portfolio(principal, start_year, m):
     # Sell on the last day of the month
     selling_prices = month_prices.iloc[-1:, :]
 
-    print(buying_prices)
+    # print(buying_prices)
 
-    print(selling_prices)
+    # print(selling_prices)
 
     # Number bought for each stock
     stocks_bought = [budget[i] // buying_prices.iloc[0, i] for i in range(N)]
@@ -154,11 +154,12 @@ def update_returns(start_date, end_date):
     return rets
 
 
-MONTHS = 6 # We rebalance for half a year
+MONTHS = 12 # We rebalance for half a year
 principal = 100000 # We start out with
 start_data = "2010-1"
 end_data = "2011-12"
 timeline_start = 2012
+data_start = 2010
 
 return_pct = df.loc[start_data: end_data].pct_change()
 # Create the covariance matrix and returns list
@@ -174,8 +175,9 @@ for m in range(MONTHS):
     month = mdash % 12 + 1
     # print(month, principal)
     end_date = str(timeline_start + yr) + "-" + str(month)
+    start_date = str(data_start + yr) + "-" + str(month % 12 + 1)
 
-    daily_returns = update_returns(start_data, end_date)
+    daily_returns = update_returns(start_date, end_date)
     cov = daily_returns.cov() * 252
     means = daily_returns.mean(axis=0) * 252
 
