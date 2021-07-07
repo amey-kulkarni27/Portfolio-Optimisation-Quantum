@@ -3,8 +3,9 @@ from collections import defaultdict
 import pandas as pd
 from dwave.system import DWaveSampler, EmbeddingComposite
 
-N = 3 # Number of stocks
-sig_p = 0.6 # Expected return from n stocks (not average currently)
+N = 5 # Number of stocks
+f = 3
+sig_p = 0.3 * f # Expected return from n stocks (not average currently)
 G = nx.Graph()
 G.add_edges_from([(i, j) for i in range(N) for j in range(i + 1, N)])
 
@@ -47,4 +48,16 @@ distribution = sampleset.first.sample
 for s_num in distribution.keys():
     if(distribution[s_num] == 1):
         actual_return += returns.iloc[s_num]
-print(actual_return)
+# print(actual_return)
+print()
+print("Best Portfolio-")
+print("Desired Returns: ", str(sig_p))
+print("Actual Returns: ", actual_return)
+print("Samples to be chosen: ", sampleset.first.sample)
+vol = 0.0
+for i in range(N):
+    for j in range(N):
+        vol += sampleset.first.sample[i] * sampleset.first.sample[j] * cov.iloc[i, j] / f / f
+
+print("Volatility of Portfolio: ", vol)
+print("Risk of Portfolio: ", vol ** 0.5)

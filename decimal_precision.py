@@ -98,7 +98,7 @@ for distribution in distributions:
             actual_return += returns.iloc[i] / pow(2, p)
     
     actual_return /= sum(wts)
-    wts = [wts[i] / sum(wts) for i in range(len(wts))]
+    wts = [round(wts[i] / sum(wts), 2) for i in range(len(wts))]
 
     volatility = 0.0
     for i in range(N):
@@ -108,7 +108,7 @@ for distribution in distributions:
     print("\n\n Portfolio " + str(ctr))
     print("Weights: ", wts)
     print("Returns: ", actual_return)
-    print("Volatility: ", math.sqrt(volatility))
+    print("Risk: ", math.sqrt(volatility))
     ctr += 1
 
 
