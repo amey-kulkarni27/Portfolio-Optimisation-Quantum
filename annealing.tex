@@ -24,7 +24,10 @@ the $i^{th}$ stock.)
 We want to allow exactly $f$ stocks, hence the following constraint-
 $$(\sum\limits_{i = 1}^{n} x_i - f)^2 = 0$$
 This gives a quadratic form equation. To satisfy this, we need exactly $f$ many $x_i$ set to $1$.
-\section{Expected Return Constraint}
+\section{Desired Return Constraint}
+We want to ensure that the Returns we get are as close to the Desired Returns as possible, therefore-
+$$(\sum\limits_{i = 1}^{n} r_i x_i - \mu_p)^2 = 0$$
+where $r_i$ denotes the average returns of the $i^{th}$ stock and $\mu_p$ is the Desired Returns.
 \end{document}
 
 
