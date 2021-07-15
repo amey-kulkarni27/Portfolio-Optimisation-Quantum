@@ -28,7 +28,7 @@ dim = N * precision_bits # dim stands for matrix dimensions
 f = N * max_wt # Fixed number of stocks that can be chosen
 expected_return = 0.15
 sig_p = expected_return * f # Expected return from n stocks (not average currently)
-
+month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 
 G = nx.Graph()
@@ -41,7 +41,7 @@ def find_portfolio(principal, start_year, m):
     Given the principal amount, find best portfolio
     Return amount earned at the end of the month
     '''
-    '''
+    
     # The matrix where we add the objective and the constraint
     Q = defaultdict(int)
 
@@ -107,10 +107,15 @@ def find_portfolio(principal, start_year, m):
             p = s_num % precision_bits + 1 # Bit number
             wts[i] += 1 / pow(2, p)
     # For a month
-    '''
-    wts = [1 for i in range(N)]
+    
+    # wts = [1 for i in range(N)]
     wts = [wts[i] / sum(wts) for i in range(len(wts))]
-    print(wts)
+
+    print(month_names[m])
+    print("Axis Bank:", wts[0])
+    print("Adani Ports:", wts[1])
+    print("Asian Paints:", wts[2])
+    print("")
 
     # Distribution of principal for each stock
     budget = [principal * wts[i] for i in range(N)]
@@ -153,18 +158,54 @@ def update_returns(start_date, end_date):
     rets = df_new.pct_change()
     return rets
 
+def dumb_portfolio(principal, start_date, end_date):
+    
 
-MONTHS = 12 # We rebalance for half a year
+    wts = [1 for i in range(N)]
+    wts = [wts[i] / sum(wts) for i in range(len(wts))]
+
+    # Distribution of principal for each stock
+    budget = [principal * wts[i] for i in range(N)]
+    
+    # Stock prices in that month
+    month_prices = df.loc[start_date: end_date]
+    # Buy on the first day of the month
+    buying_prices = month_prices.iloc[:1, :]
+    # Sell on the last day of the month
+    selling_prices = month_prices.iloc[-1:, :]
+
+    # Number bought for each stock
+    stocks_bought = [budget[i] // buying_prices.iloc[0, i] for i in range(N)]
+
+    # Money expended in the process
+    money_spent = [stocks_bought[i] * buying_prices.iloc[0, i] for i in range(N)]
+    # Money leftover, due to rounding
+    leftover = principal - sum(money_spent)
+
+    money_gained = [stocks_bought[i] * selling_prices.iloc[0, i] for i in range(N)]
+
+    # We buy stocks from the first day of the month, and sell on the last day
+    return sum(money_gained) + leftover
+
+MONTHS = 12 # We monthly rebalance for a year
 principal = 100000 # We start out with
-start_data = "2010-1"
-end_data = "2011-12"
-timeline_start = 2012
-data_start = 2010
+start_data = "2010-1" # Data collection starts
+end_data = "2011-12" # Data Collection ends
+timeline_start = 2012 # Start rebalancing process
+
+print("Starting Amount:", principal)
 
 return_pct = df.loc[start_data: end_data].pct_change()
 # Create the covariance matrix and returns list
 cov = return_pct.cov() * 252
 means = return_pct.mean(axis=0) * 252
+
+data_start = 2010
+start_yr = "2012"
+end_yr = "2012"
+
+dumb = dumb_portfolio(principal, start_yr, end_yr)
+print("Dumb Portfolio:", dumb)
 
 for m in range(MONTHS):
     mdash = m
@@ -181,4 +222,4 @@ for m in range(MONTHS):
     cov = daily_returns.cov() * 252
     means = daily_returns.mean(axis=0) * 252
 
-print(principal)
+print("Quantum Annealing Result:", principal)
